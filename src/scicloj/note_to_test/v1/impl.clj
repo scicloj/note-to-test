@@ -25,23 +25,27 @@
       (->> (map (partial str "    "))
            (string/join "\n"))))
 
-(defn generate-test [code index]
-  (format "
+(def test-template
+  "
 (deftest %s
   (is (=
 %s
 
 %s)))
-"
+")
+
+(defn generate-test [code index source-ns]
+  (format test-template
           (str "test-" index)
           (indent code)
-          (-> code
-              read-string
-              eval
-              represent-value
-              pp/pprint
-              with-out-str
-              indent)))
+          (binding [*ns* source-ns]
+            (-> code
+                read-string
+                eval
+                represent-value
+                pp/pprint
+                with-out-str
+                indent))))
 
 (defn test-ns-symbol [ns-symbol]
   (-> ns-symbol
@@ -115,7 +119,8 @@
                                  test-form)})))))
 
 
-(defn prepare-context [source-path]
+(defn prepare-context [source-path {:keys [cleanup-existing-tests?]}]
+  (load-file source-path)
   (let [forms ( read-forms
                source-path)
         ns-form (->> forms
@@ -124,7 +129,8 @@
         ns-symbol (second ns-form)
         test-path (ns-name->test-path
                    ns-symbol)
-        existing-tests (read-tests test-path)
+        existing-tests (when-not cleanup-existing-tests?
+                         (read-tests test-path))
         known-forms (some->> existing-tests
                              (map :original-form)
                              set)
@@ -161,7 +167,8 @@
       (->> codes-for-tests
            (map-indexed (fn [i code]
                           (-> code
-                              (generate-test (+ i n-existing-tests))
+                              (generate-test (+ i n-existing-tests)
+                                             (find-ns ns-symbol))
                               println
                               with-out-str)))
            (concat
