@@ -129,8 +129,11 @@
         ns-symbol (second ns-form)
         test-path (ns-name->test-path
                    ns-symbol)
-        existing-tests (when-not cleanup-existing-tests?
-                         (read-tests test-path))
+        _ (when cleanup-existing-tests?
+            (-> test-path
+                io/file
+                io/delete-file))
+        existing-tests (read-tests test-path)
         known-forms (some->> existing-tests
                              (map :original-form)
                              set)

@@ -26,7 +26,7 @@
 
 (+ 1 3)
 
-(f 102000)
+(f 1020)
 
 (comment
   (note-to-test/run! "notebooks/dum/dummy.clj")
