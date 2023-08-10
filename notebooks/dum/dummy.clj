@@ -1,6 +1,5 @@
 (ns dum.dummy
-  (:require [scicloj.note-to-test.v1.api :as ntt]
-            [scicloj.note-to-test.v1.impl :as impl]))
+  (:require [scicloj.note-to-test.v1.api :as note-to-test]))
 
 
 (+ 1 2 3)
@@ -27,10 +26,8 @@
 
 (+ 1 3)
 
-(f 1001)
+(f 102000)
 
 (comment
-  (-> "notebooks/dum/dummy.clj"
-      impl/prepare-context
-      impl/write-tests!)
+  (note-to-test/run! "notebooks/dum/dummy.clj")
   ,)

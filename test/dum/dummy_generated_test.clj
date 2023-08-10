@@ -43,3 +43,159 @@
 
     1010)))
 
+
+(deftest test-5
+  (is (=
+    (f 1002)
+
+    1011)))
+
+
+(deftest test-6
+  (is (=
+    (f 1000)
+
+    1009)))
+
+(ns
+ dum.dummy-generated-test
+ (:require [clojure.test :refer [deftest is]] [dum.dummy :refer :all]))
+
+
+(deftest test-0
+  (is (=
+    (+ 1 2 3)
+
+    6)))
+
+
+
+(deftest test-1
+  (is (=
+    (+ 4
+       5
+       6)
+
+    15)))
+
+
+
+(deftest test-2
+  (is (=
+    (f 11)
+
+    20)))
+
+
+
+(deftest test-3
+  (is (=
+    (+ 1 3)
+
+    4)))
+
+
+
+(deftest test-4
+  (is (=
+    (f 1000)
+
+    1009)))
+
+(ns
+ dum.dummy-generated-test
+ (:require [clojure.test :refer [deftest is]] [dum.dummy :refer :all]))
+
+
+(deftest test-0
+  (is (=
+    (+ 1 2 3)
+
+    6)))
+
+
+
+(deftest test-1
+  (is (=
+    (+ 4
+       5
+       6)
+
+    15)))
+
+
+
+(deftest test-2
+  (is (=
+    (f 11)
+
+    20)))
+
+
+
+(deftest test-3
+  (is (=
+    (+ 1 3)
+
+    4)))
+
+
+
+(deftest test-4
+  (is (=
+    (f 1020)
+
+    1029)))
+
+(ns
+ dum.dummy-generated-test
+ (:require [clojure.test :refer [deftest is]] [dum.dummy :refer :all]))
+
+
+(deftest test-0
+  (is (=
+    (+ 1 2 3)
+
+    6)))
+
+
+
+(deftest test-1
+  (is (=
+    (+ 4
+       5
+       6)
+
+    15)))
+
+
+
+(deftest test-2
+  (is (=
+    (f 11)
+
+    20)))
+
+
+
+(deftest test-3
+  (is (=
+    (+ 1 3)
+
+    4)))
+
+
+
+(deftest test-4
+  (is (=
+    (f 10200)
+
+    10209)))
+
+
+(deftest test-22
+  (is (=
+    (f 102000)
+
+    102009)))
+
