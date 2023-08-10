@@ -27,7 +27,7 @@ Assume you have a namespace, say `dum.dummy` in the file [notebooks/dum/dummy.cl
 ```clj
 (note-to-test/run! "notebooks/dum/dummy.clj")
 ```
-would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](notebooks/dum/dummy-generated-test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `run!` call.
+would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy-generated-test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `run!` call.
 
 If that namespace already exists, then we keep the existing tests (verifying old values that have been generated in the past). We avoid adding new tests for the code examples that already appear in existing tests.
 
