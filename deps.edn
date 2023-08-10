@@ -3,7 +3,8 @@
  :aliases {:build {:deps {io.github.seancorfield/build-clj
                           {:git/tag "v0.6.4" :git/sha "c21cfde"}}
                    :ns-default build}
-           :dev {:extra-deps {}}
+           :dev {:extra-paths ["test" "notebooks"]
+                 :extra-deps {}}
            :test {:extra-paths ["test" "notebooks"]
                   :extra-deps {org.clojure/test.check {:mvn/version "1.1.1"}
                                io.github.cognitect-labs/test-runner
