@@ -47,13 +47,17 @@
 ")
 
 (defn ->test [code index source-ns]
-  (format test-template
-          (str "test-" index)
-          (indent code 4)
-          (binding [*ns* source-ns]
-            (-> code
-                read-string
-                eval
+  (let [output (try (binding [*ns* source-ns]
+                      (load-string code))
+                    (catch Exception e
+                      (throw (ex-info "note-to-test: Exception on load-string"
+                                      {:source-ns source-ns
+                                       :code code
+                                       :exception e}))))]
+    (format test-template
+            (str "test-" index)
+            (indent code 4)
+            (-> output
                 represent-value
                 pp/pprint
                 with-out-str
@@ -139,7 +143,12 @@
       (io/delete-file file))))
 
 (defn prepare-context [source-path {:keys [cleanup-existing-tests?]}]
-  (load-file source-path)
+  (try
+    (load-file source-path)
+    (catch Exception e
+      (throw (ex-info "note-to-test: Exception on lode-file"
+                      {:source-path source-path
+                       :exception e}))))
   (let [forms ( read-forms
                source-path)
         ns-form (->> forms
