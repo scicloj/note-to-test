@@ -91,6 +91,7 @@ You see, the output value is represented as a code snippet that would generate t
 - support docstrings
   - generate tests from code examples in docstrings
   - explore generate docstrings in a structured way (marking code examples explicitly)
+- support approximate comparisons of values for floating-point computations
 
 ## License
 
