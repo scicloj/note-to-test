@@ -78,7 +78,7 @@ will result in a test like
        (tablecloth.api/dataset {:x [1 2 3], :y [10 20 30]}))))
 ```
 
-You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example
+You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example.
 
 ## Wishlist
 - support an alternative plain-data output format to help seeing the output changes explicitly
