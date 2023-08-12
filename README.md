@@ -21,6 +21,20 @@ Tests are accumulated in standard clojure.test files. Each namespace of code exa
 
 Old tests are kept until one removes them manually (or explicitly asks to clean them up). New tests are added if they are based on code examples which do not appear in the test files yet.
 
+### Caveats
+
+This method is meaningful only if all code examples are stateless -- that is, only if their output would be the same wherever they are evaluated throughout the whole namespace evaluation process (assuming that all relevant vars are already defined).
+
+A stateful notebook such as
+```clj
+(def x 1)
+(* x 10)
+(def x (inc x))
+(* x 20)
+```
+will result in wrong tests.
+
+
 ## Usage
 
 ```clj
