@@ -53,7 +53,7 @@ For example, let us add support for [tech.ml.dataset](https://github.com/techasc
 ```clj
 (require '[tablecloth.api :as tc])
 (note-to-test/define-value-representation!
-  "tablecloth dataset"
+  "tech.ml.dataset dataset"
   {:predicate tc/dataset?
    :representation (fn [ds]
                      `(tc/dataset ~(-> ds
