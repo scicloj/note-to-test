@@ -42,8 +42,43 @@ If that namespace already exists, then we keep the existing tests (verifying old
 ```
 would first clean the test namespace up, removing all existing tests.
 
-## TODO
-- document the extensible support for special values (beyond plain clj data)
+### Handling special values
+
+For plain Clojure data structures, pretty printing the structure results in a readable string that can be used for the test code.
+
+Other values may need some care to be represented in the test. Defining such representations can be done using `define-value-representation!`.
+
+For example, let us add support for [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) datasets, that we will use through [Tablecloth](https://scicloj.github.io/tablecloth/).
+
+```clj
+(require '[tablecloth.api :as tc])
+(note-to-test/define-value-representation!
+  "tablecloth dataset"
+  {:predicate tc/dataset?
+   :representation (fn [ds]
+                     `(tc/dataset ~(-> ds
+                                       (update-vals vec)
+                                       (->> (into {})))))})
+```
+
+Now, a code example like
+```clj
+(-> {:x [1 2 3]}
+    tc/dataset
+    (tc/map-columns :y [:x] (partial * 10)))
+```
+will result in a test like
+```clj
+(deftest test-3
+  (is (=
+       (-> {:x [1 2 3]}
+           tc/dataset
+           (tc/map-columns :y [:x] (partial * 10)))
+       ;; =>
+       (tablecloth.api/dataset {:x [1 2 3], :y [10 20 30]}))))
+```
+
+You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example
 
 ## Wishlist
 - support an alternative plain-data output format to help seeing the output changes explicitly
@@ -56,7 +91,7 @@ would first clean the test namespace up, removing all existing tests.
 - support docstrings
   - generate tests from code examples in docstrings
   - explore generate docstrings in a structured way (marking code examples explicitly)
-  
+
 ## License
 
 Copyright © 2023 Scicloj
