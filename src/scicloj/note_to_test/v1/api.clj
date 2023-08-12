@@ -8,3 +8,7 @@
    (-> source-path
        (impl/prepare-context options)
        impl/write-tests!)))
+
+(defn define-value-representation!
+  [name spec]
+  (impl/define-value-representation! name spec))

@@ -5,39 +5,51 @@
             [clojure.tools.reader.reader-types]
             [clojure.java.io :as io]))
 
-
+#_(defn spy [x tag]
+    (pp/pprint [:tag x])
+    x)
 
 (def *special-value-representations
-  (atom []))
+  (atom {}))
+
+(defn define-value-representation!
+  [name {:keys [predicate representation]}]
+  (swap! *special-value-representations
+         assoc name
+         {:predicate predicate
+          :representation representation})
+  :ok)
 
 (defn represent-value [v]
   (-> (->> @*special-value-representations
-           (map (fn [{:keys [pred repr]}]
-                  (if (pred v)
-                    (repr v))))
+           (map (fn [[_ {:keys [predicate representation]}]]
+                  (if (predicate v)
+                    (representation v))))
            (filter identity)
            first)
       (or v)))
 
-(defn indent [code]
-  (-> code
-      (string/split #"\n")
-      (->> (map (partial str "    "))
-           (string/join "\n"))))
+(defn indent [code n-spaces]
+  (let [whitespaces (apply str (repeat n-spaces \space))]
+    (-> code
+        (string/split #"\n")
+        (->> (map (fn [line]
+                    (str whitespaces line)))
+             (string/join "\n")))))
 
 (def test-template
   "
 (deftest %s
   (is (=
 %s
-
+    ;; =>
 %s)))
 ")
 
-(defn generate-test [code index source-ns]
+(defn ->test [code index source-ns]
   (format test-template
           (str "test-" index)
-          (indent code)
+          (indent code 4)
           (binding [*ns* source-ns]
             (-> code
                 read-string
@@ -45,23 +57,30 @@
                 represent-value
                 pp/pprint
                 with-out-str
-                indent))))
+                (indent 4)))))
 
-(defn test-ns-symbol [ns-symbol]
+(defn ->test-ns-symbol [ns-symbol]
   (-> ns-symbol
       name
       (str "-generated-test")
       symbol))
 
-(defn generate-test-ns [ns-symbol]
-  (-> (list 'ns
-            (test-ns-symbol ns-symbol)
-            (list
-             :require
-             '[clojure.test :refer [deftest is]]
-             [ns-symbol :refer :all]))
+
+
+(defn ->test-ns-requires [ns-symbol ns-requires]
+  (-> (concat (list
+               :require
+               '[clojure.test :refer [deftest is]]
+               [ns-symbol :refer :all])
+              ns-requires)
       pp/pprint
       with-out-str))
+
+(defn ->test-ns [ns-symbol ns-requires]
+  (format "(ns %s\n%s)"
+          (->test-ns-symbol ns-symbol)
+          (-> (->test-ns-requires ns-symbol ns-requires)
+              (indent 2))))
 
 (defn code->forms [code]
   (->> code
@@ -75,18 +94,15 @@
        slurp
        code->forms))
 
-(defn begins-with? [symbol-or-symbols-set]
-  (cond
-    ;; a symbol
-    (symbol? symbol-or-symbols-set)
+(defn begins-with? [value-or-set-of-values]
+  (if (set? value-or-set-of-values)
     (fn [form]
       (and (list? form)
-           (-> form first (= symbol-or-symbols-set))))
-    ;; a set of symbols
-    (set? symbol-or-symbols-set)
+           (-> form first value-or-set-of-values)))
+    ;; else
     (fn [form]
       (and (list? form)
-           (-> form first symbol-or-symbols-set)))))
+           (-> form first (= value-or-set-of-values))))))
 
 (defn ns-name->test-path [ns-name]
   (-> ns-name
@@ -117,7 +133,10 @@
                 {:test-form test-form
                  :original-form (test-form->original-form
                                  test-form)})))))
-
+(defn delete-file-when-exists [path]
+  (let [file (io/file path)]
+    (when (.exists file)
+      (io/delete-file file))))
 
 (defn prepare-context [source-path {:keys [cleanup-existing-tests?]}]
   (load-file source-path)
@@ -127,12 +146,14 @@
                      (filter (begins-with? 'ns))
                      first)
         ns-symbol (second ns-form)
+        ns-requires (some->> ns-form
+                             (filter (begins-with? :require))
+                             first
+                             rest)
         test-path (ns-name->test-path
                    ns-symbol)
         _ (when cleanup-existing-tests?
-            (-> test-path
-                io/file
-                io/delete-file))
+            (delete-file-when-exists test-path))
         existing-tests (read-tests test-path)
         known-forms (some->> existing-tests
                              (map :original-form)
@@ -154,6 +175,7 @@
                                         :source)))
                              (remove nil?))]
     {:ns-symbol ns-symbol
+     :ns-requires ns-requires
      :test-path test-path
      :existing-tests existing-tests
      :codes-for-tests codes-for-tests}))
@@ -161,6 +183,7 @@
 
 (defn write-tests! [context]
   (let [{:keys [ns-symbol
+                ns-requires
                 test-path
                 codes-for-tests
                 existing-tests]} context]
@@ -169,15 +192,14 @@
     (let [n-existing-tests (count existing-tests)]
       (->> codes-for-tests
            (map-indexed (fn [i code]
-                          (-> code
-                              (generate-test (+ i n-existing-tests)
-                                             (find-ns ns-symbol))
-                              println
-                              with-out-str)))
+                          (->test code
+                                  (+ i n-existing-tests)
+                                  (find-ns ns-symbol))))
            (concat
             (if existing-tests
               []
-              [(generate-test-ns ns-symbol)]))
+              [(->test-ns ns-symbol
+                          ns-requires)]))
            (string/join "\n")
            (#(spit test-path
                    %

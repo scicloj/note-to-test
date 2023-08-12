@@ -1,14 +1,18 @@
 (ns dum.dummy
-  (:require [scicloj.note-to-test.v1.api :as note-to-test]))
+  (:require [scicloj.note-to-test.v1.api :as note-to-test]
+            [tablecloth.api :as tc]))
 
-
-(+ 1 2 3)
+(note-to-test/define-value-representation!
+  "tablecloth dataset"
+  {:predicate tc/dataset?
+   :representation (fn [ds]
+                     `(tc/dataset ~(-> ds
+                                       (update-vals vec)
+                                       (->> (into {})))))})
 
 (+ 4
    5
    6)
-
-9
 
 
 (defn f [x]
@@ -16,18 +20,12 @@
 
 (f 11)
 
-(comment
-  (+ 8 7
-     11)
-
-  (-> 9
-      (+ 20)))
-
-
-(+ 1 3)
-
-(f 1020)
+(-> {:x [1 2 3]}
+    tc/dataset
+    (tc/map-columns :y [:x] (partial * 10)))
 
 (comment
   (note-to-test/run! "notebooks/dum/dummy.clj")
+  (note-to-test/run! "notebooks/dum/dummy.clj"
+                     {:cleanup-existing-tests? true})
   ,)
