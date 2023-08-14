@@ -45,10 +45,11 @@
 (def test-template
   "
 (deftest %s
-  (is (=
+  (is (->
 %s
-    ;; =>
-%s)))
+    note-to-test/represent-value
+    (=
+%s))))
 ")
 
 (defn ->test [code index source-ns]
@@ -71,7 +72,7 @@
                   represent-value
                   pp/pprint
                   with-out-str
-                  (indent 4))))))
+                  (indent 5))))))
 
 
 

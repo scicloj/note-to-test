@@ -50,3 +50,9 @@
   "
   [name spec]
   (impl/define-value-representation! name spec))
+
+
+(defn represent-value
+  "Represent a given value `v` using the extensible definitions of special value representations."
+  [v]
+  (impl/represent-value v))

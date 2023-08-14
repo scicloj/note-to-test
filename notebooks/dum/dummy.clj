@@ -6,9 +6,9 @@
   "tablecloth dataset"
   {:predicate tc/dataset?
    :representation (fn [ds]
-                     `(tc/dataset ~(-> ds
-                                       (update-vals vec)
-                                       (->> (into {})))))})
+                     (-> ds
+                         (update-vals vec)
+                         (->> (into {}))))})
 
 (+ 4
    5
