@@ -18,11 +18,15 @@
 (defn f [x]
   (+ x 9))
 
-(f 11)
+(f 12)
+
 
 (-> {:x [1 2 3]}
     tc/dataset
     (tc/map-columns :y [:x] (partial * 10)))
+
+(f 13)
+
 
 (comment
   (note-to-test/run! "notebooks/dum/dummy.clj")
