@@ -4,8 +4,6 @@ Generating tests from Clojure notes
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/note-to-test.svg)](https://clojars.org/org.scicloj/note-to-test)
 
-# TODO rewrite this README for the snapshot-based approach
-
 ## Status
 Initial draft
 
