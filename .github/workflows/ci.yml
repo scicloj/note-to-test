@@ -6,11 +6,7 @@ jobs:
 
   clojure:
 
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -18,28 +14,22 @@ jobs:
 
       # It is important to install java before installing clojure tools which needs java
       # exclusions: babashka, clj-kondo and cljstyle
-      - name: Prepare java
+      - name: Prepare Java
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '8'
 
-      - name: Install clojure tools
+      - name: Install Clojure tools
         uses: DeLaGuardo/setup-clojure@11.0
         with:
           # Install just one or all simultaneously
           # The value must indicate a particular version of the tool, or use 'latest'
           # to always provision the latest version
           cli: 1.10.1.693              # Clojure CLI based on tools.deps
-          bb: 0.7.8                    # Babashka
-          clj-kondo: 2022.05.31        # Clj-kondo
-          cljfmt: 0.10.2               # cljfmt
-          cljstyle: 0.15.0             # cljstyle
-          cmd-exe-workaround: 'latest' # Replaces `clojure` with `deps.clj` on Windows
-          zprint: 1.2.3                # zprint
 
       # Optional step:
-      - name: Cache clojure dependencies
+      - name: Cache Clojure dependencies
         uses: actions/cache@v3
         with:
           path: |
@@ -65,4 +55,3 @@ jobs:
           CLOJARS_PASSWORD: ${{ secrets.CLOJARSTOKEN }}
           CLOJARS_USERNAME: myusername
         run: clojure -T:build deploy
-
