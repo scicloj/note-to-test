@@ -4,7 +4,10 @@
             [clojure.tools.reader]
             [clojure.tools.reader.reader-types]
             [clojure.java.io :as io]
-            [clojure.java.shell :as shell]))
+            [clojure.java.shell :as shell])
+  (:import (java.io File)))
+
+(set! *warn-on-reflection* true)
 
 (def *special-value-representations
   (atom {}))
@@ -25,6 +28,11 @@
            (filter identity)
            first)
       (or v)))
+
+(defn clojure-source? [^File file]
+  (boolean
+    (and (.isFile file)
+         (re-matches #".*\.clj[cx]?$" (.getName file)))))
 
 (defn indent [code n-spaces]
   (let [whitespaces (apply str (repeat n-spaces \space))]
@@ -146,7 +154,7 @@
 
 (defn prepare-context [source-path]
   (try
-    (load-file source-path)
+    (load-file (str source-path))
     (catch Exception e
       (throw (ex-info "note-to-test: Exception on lode-file"
                       {:source-path source-path

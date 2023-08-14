@@ -29,5 +29,5 @@
 
 
 (comment
-  (note-to-test/run! "notebooks/dum/dummy.clj")
+  (note-to-test/gentest! "notebooks/dum/dummy.clj")
   ,)

@@ -1,19 +1,37 @@
 (ns scicloj.note-to-test.v1.api
-  (:require [scicloj.note-to-test.v1.impl :as impl]))
+  (:require [clojure.java.io :as io]
+            [scicloj.note-to-test.v1.impl :as impl])
+  (:import (java.io File)))
 
-(defn run!
+(set! *warn-on-reflection* true)
+
+(defn gentest!
   "Generate a clojure.test file for the code examples in the file at `source-path`.
 
-  Examples:
-  Generate tests for a given file incrementally, handling only new code examples.
+  Example:
   ```clj
-  (run! \"notebooks/dum/dummy.clj\")
+  (gentest! \"notebooks/dum/dummy.clj\")
   ```
   "
   [source-path]
   (-> source-path
       impl/prepare-context
       impl/write-tests!))
+
+(defn gentests!
+  "Generate tests for all source files discovered in [dirs]."
+  ([dirs] (gentests! dirs {}))
+  ([dirs options]
+   (let [{:keys [verbose]} options]
+     (when verbose
+       (println "Generating tests with options:" (pr-str options)))
+     (doseq [dir dirs
+             ^File file (file-seq (io/file dir))
+             :when (impl/clojure-source? file)]
+       (when verbose (println "Loading file" (str file)))
+       (cond-> (gentest! file options)
+               verbose (println))))
+   [:success]))
 
 (defn define-value-representation!
   "Define a data representation for special values. Outputs in test code will be represented this way.

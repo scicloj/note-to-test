@@ -1,0 +1,57 @@
+name: note-to-test CI
+
+on: [push]
+
+jobs:
+
+  clojure:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # It is important to install java before installing clojure tools which needs java
+      # exclusions: babashka, clj-kondo and cljstyle
+      - name: Prepare Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '8'
+
+      - name: Install Clojure tools
+        uses: DeLaGuardo/setup-clojure@11.0
+        with:
+          # Install just one or all simultaneously
+          # The value must indicate a particular version of the tool, or use 'latest'
+          # to always provision the latest version
+          cli: 1.10.1.693              # Clojure CLI based on tools.deps
+
+      # Optional step:
+      - name: Cache Clojure dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          # List all files containing dependencies:
+          key: cljdeps-${{ hashFiles('deps.edn') }}
+          # key: cljdeps-${{ hashFiles('deps.edn', 'bb.edn') }}
+          # key: cljdeps-${{ hashFiles('project.clj') }}
+          # key: cljdeps-${{ hashFiles('build.boot') }}
+          restore-keys: cljdeps-
+
+      - name: Generate tests
+        run: clojure -M:dev:gen --verbose
+
+      - name: Execute tests
+        run: clojure -M:test
+
+      - name: Deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'org.scicloj/note-to-test'
+        env:
+          CLOJARS_PASSWORD: ${{ secrets.CLOJARSTOKEN }}
+          CLOJARS_USERNAME: myusername
+        run: clojure -T:build deploy
