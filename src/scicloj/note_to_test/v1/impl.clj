@@ -160,12 +160,7 @@
                    version)
         codes-for-tests (->> forms
                              (filter (complement
-                                      (begins-with?
-                                       '#{ns
-                                          def
-                                          defonce
-                                          defn
-                                          comment})))
+                                      (begins-with? '#{ns comment})))
                              (map (fn [form]
                                     (-> form
                                         meta
