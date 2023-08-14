@@ -67,10 +67,9 @@
 
 
 
-(defn ->test-ns-symbol [ns-symbol version]
-  (format "%s-generated-%s-test"
-          (name ns-symbol)
-          version))
+(defn ->test-ns-symbol [ns-symbol]
+  (format "%s-generated-test"
+          (name ns-symbol)))
 
 (defn ->test-path [test-ns-symbol]
   (-> test-ns-symbol
@@ -140,10 +139,10 @@
                  :original-form (test-form->original-form
                                  test-form)})))))
 
-(defn git-hash []
-  (-> (shell/sh "git" "rev-parse" "HEAD")
-      :out
-      (string/replace #"\n" "")))
+#_(defn git-hash []
+    (-> (shell/sh "git" "rev-parse" "HEAD")
+        :out
+        (string/replace #"\n" "")))
 
 (defn prepare-context [source-path]
   (try
@@ -152,8 +151,7 @@
       (throw (ex-info "note-to-test: Exception on lode-file"
                       {:source-path source-path
                        :exception e}))))
-  (let [version (git-hash)
-        forms (read-forms source-path)
+  (let [forms (read-forms source-path)
         ns-form (->> forms
                      (filter (begins-with? 'ns))
                      first)
@@ -162,7 +160,7 @@
                              (filter (begins-with? :require))
                              first
                              rest)
-        test-ns-symbol (->test-ns-symbol ns-symbol version)
+        test-ns-symbol (->test-ns-symbol ns-symbol)
         test-ns-requires (->test-ns-requires ns-symbol ns-requires)
         test-path (->test-path test-ns-symbol)
         codes-for-tests (->> forms
