@@ -29,7 +29,7 @@
              ^File file (file-seq (io/file dir))
              :when (impl/clojure-source? file)]
        (when verbose (println "Loading file" (str file)))
-       (cond-> (gentest! file options)
+       (cond-> (gentest! file)
                verbose (println))))
    [:success]))
 

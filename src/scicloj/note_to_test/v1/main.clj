@@ -6,7 +6,6 @@
 (def cli-options
   [["-d" "--dirs" :default ["notebooks"]]
    ["-a" "--accept"]
-   ["-c" "--cleanup-existing-tests?"]
    ["-v" "--verbose"]
    ["-h" "--help"]])
 
