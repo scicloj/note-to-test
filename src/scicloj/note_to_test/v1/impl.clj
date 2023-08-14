@@ -69,8 +69,7 @@
 (defn ->test-ns-requires [ns-symbol ns-requires]
   (-> (concat (list
                :require
-               '[clojure.test :refer [deftest is]]
-               [ns-symbol :refer :all])
+               '[clojure.test :refer [deftest is]])
               ns-requires)
       pp/pprint
       with-out-str))
