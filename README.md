@@ -19,9 +19,8 @@ It can automatically generate tests:
 
 Tests are created by running code examples and remembering their outputs. The person writing the documentation is responsible for checking that these outputs are sensible. The tests are responsible for checking these outputs remain the same on future versions.
 
-Tests are written in standard clojure.test files. 
-
-Each namespace of code examples has its own generated test file. 
+### Test files
+Tests are written in standard clojure.test files. Each namespace of code examples has its own generated test file. 
 * The top-level forms in the test namespace correspond to all runnable top-level forms in the source namespace. That is, all top-level forms except for Rich `(comment ...)` blocks. 
 * The namespace definition form is adapted to the test namespace's needs. 
 * Forms that result in a var (e.g., `def`, `defn`, `defonce`) are kept as-is. 
