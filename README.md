@@ -97,6 +97,7 @@ will result in a test like
 You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example.
 
 ## Wishlist
+- support running from command line
 - support an alternative plain-data output format to help seeing the output changes explicitly
 - make clear error messages:
   - when outputs change
@@ -108,6 +109,7 @@ You see, the output value is represented as a code snippet that would generate t
   - generate tests from code examples in docstrings
   - explore generate docstrings in a structured way (marking code examples explicitly)
 - support approximate comparisons of values for floating-point computations
+- support automatic regeneration (say, using file watch)
 
 ## License
 
