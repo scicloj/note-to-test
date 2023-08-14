@@ -3,26 +3,17 @@
 
 (defn run!
   "Generate a clojure.test file for the code examples in the file at `source-path`.
-  Optionsl `options`:
-  - :cleanup-existing-tests? - boolean - default `false` - should we create the tests file from scratch (when `true`), or incrementally (when `false`)?
 
   Examples:
   Generate tests for a given file incrementally, handling only new code examples.
   ```clj
   (run! \"notebooks/dum/dummy.clj\")
   ```
-  Generate tests from scratch:
-  ```clj
-  (run! \"notebooks/dum/dummy.clj\"
-        {:cleanup-existing-tests? true})
-  ```
   "
-  ([source-path]
-   (run! source-path {}))
-  ([source-path options]
-   (-> source-path
-       (impl/prepare-context options)
-       impl/write-tests!)))
+  [source-path]
+  (-> source-path
+      impl/prepare-context
+      impl/write-tests!))
 
 (defn define-value-representation!
   "Define a data representation for special values. Outputs in test code will be represented this way.

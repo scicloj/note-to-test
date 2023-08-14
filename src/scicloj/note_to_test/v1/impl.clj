@@ -3,11 +3,8 @@
             [clojure.pprint :as pp]
             [clojure.tools.reader]
             [clojure.tools.reader.reader-types]
-            [clojure.java.io :as io]))
-
-#_(defn spy [x tag]
-    (pp/pprint [:tag x])
-    x)
+            [clojure.java.io :as io]
+            [clojure.java.shell :as shell]))
 
 (def *special-value-representations
   (atom {}))
@@ -69,8 +66,6 @@
       (str "-generated-test")
       symbol))
 
-
-
 (defn ->test-ns-requires [ns-symbol ns-requires]
   (-> (concat (list
                :require
@@ -108,12 +103,12 @@
       (and (list? form)
            (-> form first (= value-or-set-of-values))))))
 
-(defn ns-name->test-path [ns-name]
-  (-> ns-name
-      name
-      (string/replace #"\." "/")
-      (->> (format "test/%s_generated_test.clj"))))
-
+(defn ns-name->test-path [ns-name version]
+  (format "test/%s_generated_%s_test.clj"
+          (-> ns-name
+              name
+              (string/replace #"\." "/"))
+          version))
 
 (defn test-form->original-form [test-form]
   (-> test-form
@@ -137,20 +132,21 @@
                 {:test-form test-form
                  :original-form (test-form->original-form
                                  test-form)})))))
-(defn delete-file-when-exists [path]
-  (let [file (io/file path)]
-    (when (.exists file)
-      (io/delete-file file))))
 
-(defn prepare-context [source-path {:keys [cleanup-existing-tests?]}]
+(defn git-hash []
+  (-> (shell/sh "git" "rev-parse" "HEAD")
+      :out
+      (string/replace #"\n" "")))
+
+(defn prepare-context [source-path]
   (try
     (load-file source-path)
     (catch Exception e
       (throw (ex-info "note-to-test: Exception on lode-file"
                       {:source-path source-path
                        :exception e}))))
-  (let [forms ( read-forms
-               source-path)
+  (let [version (git-hash)
+        forms (read-forms source-path)
         ns-form (->> forms
                      (filter (begins-with? 'ns))
                      first)
@@ -160,13 +156,8 @@
                              first
                              rest)
         test-path (ns-name->test-path
-                   ns-symbol)
-        _ (when cleanup-existing-tests?
-            (delete-file-when-exists test-path))
-        existing-tests (read-tests test-path)
-        known-forms (some->> existing-tests
-                             (map :original-form)
-                             set)
+                   ns-symbol
+                   version)
         codes-for-tests (->> forms
                              (filter (complement
                                       (begins-with?
@@ -175,9 +166,6 @@
                                           defonce
                                           defn
                                           comment})))
-                             (filter (-> known-forms
-                                         (or #{})
-                                         complement))
                              (map (fn [form]
                                     (-> form
                                         meta
@@ -186,7 +174,6 @@
     {:ns-symbol ns-symbol
      :ns-requires ns-requires
      :test-path test-path
-     :existing-tests existing-tests
      :codes-for-tests codes-for-tests}))
 
 
@@ -194,23 +181,17 @@
   (let [{:keys [ns-symbol
                 ns-requires
                 test-path
-                codes-for-tests
-                existing-tests]} context]
-    (when-not existing-tests
-      (io/make-parents test-path))
-    (let [n-existing-tests (count existing-tests)]
-      (->> codes-for-tests
-           (map-indexed (fn [i code]
-                          (->test code
-                                  (+ i n-existing-tests)
-                                  (find-ns ns-symbol))))
-           (concat
-            (if existing-tests
-              []
-              [(->test-ns ns-symbol
-                          ns-requires)]))
-           (string/join "\n")
-           (#(spit test-path
-                   %
-                   :append true))))
+                codes-for-tests]} context]
+    (io/make-parents test-path)
+    (->> codes-for-tests
+         (map-indexed (fn [i code]
+                        (->test code
+                                i
+                                (find-ns ns-symbol))))
+         (cons (->test-ns ns-symbol
+                          ns-requires))
+         (string/join "\n")
+         (#(spit test-path
+                 %
+                 :append true)))
     [:wrote test-path]))

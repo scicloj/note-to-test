@@ -26,6 +26,4 @@
 
 (comment
   (note-to-test/run! "notebooks/dum/dummy.clj")
-  (note-to-test/run! "notebooks/dum/dummy.clj"
-                     {:cleanup-existing-tests? true})
   ,)
