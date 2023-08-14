@@ -20,7 +20,7 @@ It can automatically generate tests:
 Tests are created by running code examples and remembering their outputs. The person writing the documentation is responsible for checking that these outputs are sensible. The tests are responsible for checking these outputs remain the same on future versions.
 
 ### Test files
-Tests are written in standard clojure.test files. Each namespace of code examples has its own generated test file. 
+Tests are written in standard `clojure.test` files. Each namespace of code examples has its own generated test file. 
 * The top-level forms in the test namespace correspond to all runnable top-level forms in the source namespace. That is, all top-level forms except for Rich `(comment ...)` blocks. 
 * The namespace definition form is adapted to the test namespace's needs. 
 * Forms that result in a var (e.g., `def`, `defn`, `defonce`) are kept as-is. 
@@ -39,7 +39,7 @@ Assume you have a namespace, say `dum.dummy` in the file [notebooks/dum/dummy.cl
 ```clj
 (note-to-test/gentest! "notebooks/dum/dummy.clj")
 ```
-would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy_generated_test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `gentest!` call.
+would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy_generated_test.clj) with `clojure.test` tests verifying that those code examples actually return the values they had at the time we executed that `gentest!` call.
 
 ### Command Line
 
