@@ -51,20 +51,33 @@
                                       {:source-ns source-ns
                                        :code code
                                        :exception e}))))]
-    (format test-template
-            (str "test-" index)
-            (indent code 4)
-            (-> output
-                represent-value
-                pp/pprint
-                with-out-str
-                (indent 4)))))
+    (if (var? output)
+      ;; if the output is a var,
+      ;; just keep the code (so that we run things in order)
+      code
+      ;; else - actually create a test
+      (format test-template
+              (str "test-" index)
+              (indent code 4)
+              (-> output
+                  represent-value
+                  pp/pprint
+                  with-out-str
+                  (indent 4))))))
 
-(defn ->test-ns-symbol [ns-symbol]
-  (-> ns-symbol
+
+
+(defn ->test-ns-symbol [ns-symbol version]
+  (format "%s-generated-%s-test"
+          (name ns-symbol)
+          version))
+
+(defn ->test-path [test-ns-symbol]
+  (-> test-ns-symbol
       name
-      (str "-generated-test")
-      symbol))
+      (string/replace #"-" "_")
+      (string/replace #"\." "/")
+      (->> (format "test/%s.clj"))))
 
 (defn ->test-ns-requires [ns-symbol ns-requires]
   (-> (concat (list
@@ -74,10 +87,10 @@
       pp/pprint
       with-out-str))
 
-(defn ->test-ns [ns-symbol ns-requires]
+(defn ->test-ns [test-ns-symbol test-ns-requires]
   (format "(ns %s\n%s)"
-          (->test-ns-symbol ns-symbol)
-          (-> (->test-ns-requires ns-symbol ns-requires)
+          test-ns-symbol
+          (-> test-ns-requires
               (indent 2))))
 
 (defn code->forms [code]
@@ -102,12 +115,7 @@
       (and (list? form)
            (-> form first (= value-or-set-of-values))))))
 
-(defn ns-name->test-path [ns-name version]
-  (format "test/%s_generated_%s_test.clj"
-          (-> ns-name
-              name
-              (string/replace #"\." "/"))
-          version))
+
 
 (defn test-form->original-form [test-form]
   (-> test-form
@@ -154,12 +162,11 @@
                              (filter (begins-with? :require))
                              first
                              rest)
-        test-path (ns-name->test-path
-                   ns-symbol
-                   version)
+        test-ns-symbol (->test-ns-symbol ns-symbol version)
+        test-ns-requires (->test-ns-requires ns-symbol ns-requires)
+        test-path (->test-path test-ns-symbol)
         codes-for-tests (->> forms
-                             (filter (complement
-                                      (begins-with? '#{ns comment})))
+                             (remove (begins-with? '#{ns comment}))
                              (map (fn [form]
                                     (-> form
                                         meta
@@ -167,6 +174,8 @@
                              (remove nil?))]
     {:ns-symbol ns-symbol
      :ns-requires ns-requires
+     :test-ns-symbol test-ns-symbol
+     :test-ns-requires test-ns-requires
      :test-path test-path
      :codes-for-tests codes-for-tests}))
 
@@ -174,6 +183,8 @@
 (defn write-tests! [context]
   (let [{:keys [ns-symbol
                 ns-requires
+                test-ns-symbol
+                test-ns-requires
                 test-path
                 codes-for-tests]} context]
     (io/make-parents test-path)
@@ -182,8 +193,8 @@
                         (->test code
                                 i
                                 (find-ns ns-symbol))))
-         (cons (->test-ns ns-symbol
-                          ns-requires))
+         (cons (->test-ns test-ns-symbol
+                          test-ns-requires))
          (string/join "\n")
          (#(spit test-path
                  %
