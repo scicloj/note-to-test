@@ -75,9 +75,9 @@ For example, let us add support for [tech.ml.dataset](https://github.com/techasc
   "tech.ml.dataset dataset"
   {:predicate tc/dataset?
    :representation (fn [ds]
-                     `(tc/dataset ~(-> ds
-                                       (update-vals vec)
-                                       (->> (into {})))))})
+                     (-> ds
+                         (update-vals vec)
+                         (->> (into {}))))})
 ```
 
 Now, a code example like
@@ -88,29 +88,28 @@ Now, a code example like
 ```
 will result in a test like
 ```clj
-(deftest test-3
-  (is (=
+(deftest test-4
+  (is (->
        (-> {:x [1 2 3]}
            tc/dataset
            (tc/map-columns :y [:x] (partial * 10)))
-       ;; =>
-       (tablecloth.api/dataset {:x [1 2 3], :y [10 20 30]}))))
+       note-to-test/represent-value
+       (=
+        {:x [1 2 3], :y [10 20 30]}))))
 ```
-
-You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example.
 
 ## Wishlist
 - support running from command line
 - support an alternative plain-data output format to help seeing the output changes explicitly
 - make clear error messages:
-  - when outputs change
-  - when the code fails
+- when outputs change
+- when the code fails
 - support code examples in comment blocks?
 - support metadata to skip certain forms
 - remove nil outputs?
 - support docstrings
-  - generate tests from code examples in docstrings
-  - explore generate docstrings in a structured way (marking code examples explicitly)
+- generate tests from code examples in docstrings
+- explore generate docstrings in a structured way (marking code examples explicitly)
 - support approximate comparisons of values for floating-point computations
 - support automatic regeneration (say, using file watch)
 
