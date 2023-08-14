@@ -4,6 +4,8 @@ Generating tests from Clojure notes
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/note-to-test.svg)](https://clojars.org/org.scicloj/note-to-test)
 
+# TODO rewrite this README for the snapshot-based approach
+
 ## Status
 Initial draft
 
@@ -17,23 +19,13 @@ It can automatically generate tests:
 
 Tests are created by running code examples and remembering their outputs. The person writing the documentation is responsible for checking that these outputs are sensible. The tests are responsible for checking these outputs remain the same on future versions.
 
-Tests are accumulated in standard clojure.test files. Each namespace of code examples has its own generated test file.
+Tests are written in standard clojure.test files. 
 
-Old tests are kept until one removes them manually (or explicitly asks to clean them up). New tests are added if they are based on code examples which do not appear in the test files yet.
-
-### Caveats
-
-This method is meaningful only if all code examples are stateless -- that is, only if their output would be the same wherever they are evaluated throughout the whole namespace evaluation process (assuming that all relevant vars are already defined).
-
-A stateful notebook such as
-```clj
-(def x 1)
-(* x 10)
-(def x (inc x))
-(* x 20)
-```
-will result in wrong tests.
-
+Each namespace of code examples has its own generated test file. 
+* The top-level forms in the test namespace correspond to all runnable top-level forms in the source namespace. That is, all top-level forms except for Rich `(comment ...)` blocks. 
+* The namespace definition form is adapted to the test namespace's needs. 
+* Forms that result in a var (e.g., `def`, `defn`, `defonce`) are kept as-is. 
+* All other forms are turned in to `(deftest ...)` test definitions.
 
 ## Usage
 
@@ -49,14 +41,6 @@ Assume you have a namespace, say `dum.dummy` in the file [notebooks/dum/dummy.cl
 (note-to-test/gentest! "notebooks/dum/dummy.clj")
 ```
 would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy_generated_test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `gentest!` call.
-
-If that namespace already exists, then we keep the existing tests (verifying old values that have been generated in the past). We avoid adding new tests for the code examples that already appear in existing tests.
-
-```clj
-(note-to-test/gentest! "notebooks/dum/dummy.clj"
-                       {:cleanup-existing-tests? true})
-```
-would first clean the test namespace up, removing all existing tests.
 
 ### Command Line
 
@@ -78,7 +62,7 @@ clojure -M:dev:gen --verbose
 
 ### Build.tools
 
-Add `gentests!` to your test function in build.clj
+Add `gentests!` to your test function in `build.clj`.
 
 ### Handling special values
 
@@ -119,6 +103,7 @@ will result in a test like
 You see, the output value is represented as a code snippet that would generate that value. Since `tech.ml.dataset` datasets can be compared using the `=` function, this is a valid test for our code example.
 
 ## Wishlist
+- support running from command line
 - support an alternative plain-data output format to help seeing the output changes explicitly
 - make clear error messages:
   - when outputs change
@@ -130,6 +115,7 @@ You see, the output value is represented as a code snippet that would generate t
   - generate tests from code examples in docstrings
   - explore generate docstrings in a structured way (marking code examples explicitly)
 - support approximate comparisons of values for floating-point computations
+- support automatic regeneration (say, using file watch)
 
 ## License
 

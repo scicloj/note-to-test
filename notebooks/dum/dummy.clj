@@ -16,16 +16,18 @@
 
 
 (defn f [x]
-  (+ x 9))
+  (+ x 19))
 
-(f 11)
+(f 12)
+
 
 (-> {:x [1 2 3]}
     tc/dataset
     (tc/map-columns :y [:x] (partial * 10)))
 
+(f 13)
+
+
 (comment
   (note-to-test/gentest! "notebooks/dum/dummy.clj")
-  (note-to-test/gentest! "notebooks/dum/dummy.clj"
-                         {:cleanup-existing-tests? true})
   ,)
