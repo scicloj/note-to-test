@@ -37,6 +37,8 @@ will result in wrong tests.
 
 ## Usage
 
+### REPL
+
 ```clj
 (require '[scicloj.note-to-test.v1.api :as note-to-test])
 ```
@@ -44,17 +46,39 @@ will result in wrong tests.
 Assume you have a namespace, say `dum.dummy` in the file [notebooks/dum/dummy.clj](notebooks/dum/dummy.clj), which has some code examples in it.
 
 ```clj
-(note-to-test/run! "notebooks/dum/dummy.clj")
+(note-to-test/gentest! "notebooks/dum/dummy.clj")
 ```
-would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy_generated_test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `run!` call.
+would generate a test namespace 'dum.dummy-generated-test' in the file [test/dum/dummy_generated_test.clj](test/dum/dummy_generated_test.clj) with clojure.test tests verifying that those code examples actually return the values they had at the time we executed that `gentest!` call.
 
 If that namespace already exists, then we keep the existing tests (verifying old values that have been generated in the past). We avoid adding new tests for the code examples that already appear in existing tests.
 
 ```clj
-(note-to-test/run! "notebooks/dum/dummy.clj"
-                   {:cleanup-existing-tests? true})
+(note-to-test/gentest! "notebooks/dum/dummy.clj"
+                       {:cleanup-existing-tests? true})
 ```
 would first clean the test namespace up, removing all existing tests.
+
+### Command Line
+
+See [scicloj.note-to-test.v1.main/-main](src/scicloj/note_to_test/v1/main)
+
+For a deps.edn project, merge the following alias
+
+```clojure
+{:aliases
+ {:gen {:extra-deps {org.scicloj/note-to-test {:mvn/version "RELEASE"}}
+        :main-opts ["-m" "scicloj.note-to-test.v1.main"]}}}
+```
+
+And then invoke it from the command line
+
+```sh
+clojure -M:dev:gen --verbose
+```
+
+### Build.tools
+
+Add `gentests!` to your test function in build.clj
 
 ### Handling special values
 

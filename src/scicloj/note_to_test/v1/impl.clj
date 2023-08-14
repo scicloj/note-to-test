@@ -3,7 +3,10 @@
             [clojure.pprint :as pp]
             [clojure.tools.reader]
             [clojure.tools.reader.reader-types]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io])
+  (:import (java.io File)))
+
+(set! *warn-on-reflection* true)
 
 #_(defn spy [x tag]
     (pp/pprint [:tag x])
@@ -28,6 +31,11 @@
            (filter identity)
            first)
       (or v)))
+
+(defn clojure-source? [^File file]
+  (boolean
+    (and (.isFile file)
+         (re-matches #".*\.clj[cx]?$" (.getName file)))))
 
 (defn indent [code n-spaces]
   (let [whitespaces (apply str (repeat n-spaces \space))]
@@ -144,7 +152,7 @@
 
 (defn prepare-context [source-path {:keys [cleanup-existing-tests?]}]
   (try
-    (load-file source-path)
+    (load-file (str source-path))
     (catch Exception e
       (throw (ex-info "note-to-test: Exception on lode-file"
                       {:source-path source-path
