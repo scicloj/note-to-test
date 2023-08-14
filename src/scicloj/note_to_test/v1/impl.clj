@@ -194,7 +194,5 @@
          (cons (->test-ns test-ns-symbol
                           test-ns-requires))
          (string/join "\n")
-         (#(spit test-path
-                 %
-                 :append true)))
+         (spit test-path))
     [:wrote test-path]))
