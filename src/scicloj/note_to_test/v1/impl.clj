@@ -9,20 +9,17 @@
 
 (set! *warn-on-reflection* true)
 
-(def *special-value-representations
+(def *value-representations
   (atom {}))
 
-(defn define-value-representation!
-  [name {:keys [predicate representation]}]
-  (swap! *special-value-representations
-         assoc name
-         {:predicate predicate
-          :representation representation})
+(defn define-value-representations!
+  [representations]
+  (reset! *value-representations representations)
   :ok)
 
 (defn represent-value [v]
-  (-> (->> @*special-value-representations
-           (map (fn [[_ {:keys [predicate representation]}]]
+  (-> (->> @*value-representations
+           (map (fn [{:keys [predicate representation]}]
                   (if (predicate v)
                     (representation v))))
            (filter identity)

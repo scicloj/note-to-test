@@ -48,8 +48,8 @@
                                          (->> (into {})))))})
   ```
   "
-  [name spec]
-  (impl/define-value-representation! name spec))
+  [representations]
+  (impl/define-value-representations! representations))
 
 
 (defn represent-value
