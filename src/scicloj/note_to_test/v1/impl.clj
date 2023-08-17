@@ -156,10 +156,10 @@
 (defn prepare-context [source-path]
   (try
     (load-file (str source-path))
-    (catch Exception e
-      (throw (ex-info "note-to-test: Exception on lode-file"
-                      {:source-path source-path
-                       :exception e}))))
+    (catch Exception ex
+      (throw (ex-info (str "note-to-test: Exception on load-file '" source-path "'")
+                      {:source-path source-path}
+                      ex))))
   (let [forms (read-forms source-path)
         ns-form (->> forms
                      (filter (begins-with? 'ns))
@@ -187,21 +187,31 @@
      :codes-for-tests codes-for-tests}))
 
 
-(defn write-tests! [context]
-  (let [{:keys [ns-symbol
+(defn write-tests! [context options]
+  (let [{:keys [verbose accept]} options
+        {:keys [ns-symbol
                 ns-requires
                 test-ns-symbol
                 test-ns-requires
                 test-path
-                codes-for-tests]} context]
+                codes-for-tests]} context
+        prev-file (io/file test-path)
+        prev-content (when (.exists prev-file)
+                       (slurp prev-file))
+        content (->> codes-for-tests
+                     (map-indexed (fn [i code]
+                                    (->test code i (find-ns ns-symbol))))
+                     (cons (->test-ns test-ns-symbol
+                                      test-ns-requires))
+                     (string/join "\n"))]
+    (when verbose
+      (cond
+        (nil? prev-content) (println "note-to-test: CREATING" test-path)
+        (= content prev-content) (println "note-to-test: NO CHANGES" test-path)
+        ;; TODO: perhaps print a nice diff? or give the line/column?
+        (not= content prev-content) (println "note-to-test: CHANGING" test-path)))
+    (when (not accept)
+      (throw (ex-info "note-to-test: Changes detected with --accept false" {})))
     (io/make-parents test-path)
-    (->> codes-for-tests
-         (map-indexed (fn [i code]
-                        (->test code
-                                i
-                                (find-ns ns-symbol))))
-         (cons (->test-ns test-ns-symbol
-                          test-ns-requires))
-         (string/join "\n")
-         (spit test-path))
+    (spit test-path content)
     [:wrote test-path]))
