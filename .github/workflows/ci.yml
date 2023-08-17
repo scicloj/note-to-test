@@ -38,20 +38,18 @@ jobs:
             ~/.deps.clj
           # List all files containing dependencies:
           key: cljdeps-${{ hashFiles('deps.edn') }}
-          # key: cljdeps-${{ hashFiles('deps.edn', 'bb.edn') }}
-          # key: cljdeps-${{ hashFiles('project.clj') }}
-          # key: cljdeps-${{ hashFiles('build.boot') }}
           restore-keys: cljdeps-
 
       - name: Generate tests
         run: clojure -M:dev:gen --verbose
 
-      - name: Execute tests
-        run: clojure -M:test
+      - name: Execute tests and jar
+        run: clojure -T:build ci
 
-      - name: Deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'org.scicloj/note-to-test'
-        env:
-          CLOJARS_PASSWORD: ${{ secrets.CLOJARSTOKEN }}
-          CLOJARS_USERNAME: myusername
-        run: clojure -T:build deploy
+# TODO: for this to work: change myusername to a valid Clojars username, generate a token, add it as a secret in github project settings
+#      - name: Deploy
+#        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'org.scicloj/note-to-test'
+#        env:
+#          CLOJARS_PASSWORD: ${{ secrets.CLOJARSTOKEN }}
+#          CLOJARS_USERNAME: myusername
+#        run: clojure -T:build deploy

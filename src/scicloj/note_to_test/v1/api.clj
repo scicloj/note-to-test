@@ -13,10 +13,10 @@
   (gentest! \"notebooks/dum/dummy.clj\")
   ```
   "
-  [source-path]
+  [source-path options]
   (-> source-path
       impl/prepare-context
-      impl/write-tests!))
+      (impl/write-tests! options)))
 
 (defn gentests!
   "Generate tests for all source files discovered in [dirs]."
@@ -29,7 +29,7 @@
              ^File file (file-seq (io/file dir))
              :when (impl/clojure-source? file)]
        (when verbose (println "Loading file" (str file)))
-       (cond-> (gentest! file)
+       (cond-> (gentest! file options)
                verbose (println))))
    [:success]))
 
