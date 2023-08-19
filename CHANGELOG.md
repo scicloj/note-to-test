@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file. This change
 - special value representations are defined in an ordered fashion
 - moved all is clauses to one test
 - added skip options
+- taking care of requires in the body of the notebook
 
 ## [1-alpha3]
 - shifting to shapshot-based workflow

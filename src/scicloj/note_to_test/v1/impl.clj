@@ -105,13 +105,17 @@
       (string/replace #"\." "/")
       (->> (format "test/%s.clj"))))
 
-(defn ->test-ns-requires [ns-symbol ns-requires]
-  (-> (concat (list
-               :require
-               '[clojure.test :refer [deftest is]])
-              ns-requires)
-      pp/pprint
-      with-out-str))
+(defn ->test-ns-requires [ns-symbol ns-requires require-forms]
+  (let [requires (->> require-forms
+                      (mapcat rest) ; remove the 'require symbol
+                      (map second) ; remove the quote sign
+                      (concat ns-requires))]
+    (-> (concat (list
+                 :require
+                 '[clojure.test :refer [deftest is]])
+                requires)
+        pp/pprint
+        with-out-str)))
 
 (defn ->test-ns [test-ns-symbol test-ns-requires]
   (format "(ns %s\n%s)"
@@ -143,12 +147,14 @@
                      (filter (begins-with? 'ns))
                      first)
         ns-symbol (second ns-form)
+        require-forms (->> forms
+                           (filter (begins-with? 'require)))
         ns-requires (some->> ns-form
                              (filter (begins-with? :require))
                              first
                              rest)
         test-ns-symbol (->test-ns-symbol ns-symbol)
-        test-ns-requires (->test-ns-requires ns-symbol ns-requires)
+        test-ns-requires (->test-ns-requires ns-symbol ns-requires require-forms)
         test-path (->test-path test-ns-symbol)
         codes-for-tests (->> forms
                              (remove (begins-with? '#{ns comment}))
