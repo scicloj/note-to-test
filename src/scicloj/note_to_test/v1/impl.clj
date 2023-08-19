@@ -10,7 +10,7 @@
 (set! *warn-on-reflection* true)
 
 (def *value-representations
-  (atom {}))
+  (atom []))
 
 (defn define-value-representations!
   [representations]
