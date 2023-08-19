@@ -70,9 +70,13 @@
         value (try (eval form)
                    (catch Exception ex
                      (throw (ex-info "note-to-test: Exception on load-string"
-                                     {:source-path source-code}
+                                     {:source-code source-code}
                                      ex))))
-        represented-value (represent-value value)]
+        represented-value (try (represent-value value)
+                               (catch Exception ex
+                                 (throw (ex-info "note-to-test: Exception on represent-value"
+                                                 {:source-code source-code}
+                                                 ex))))]
     (when-not (or (skip-form? form)
                   (skip-represented-value? represented-value))
       (format is-template
