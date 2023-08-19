@@ -26,10 +26,20 @@
            first)
       (or v)))
 
+(defn begins-with? [value-or-set-of-values]
+  (if (set? value-or-set-of-values)
+    (fn [form]
+      (and (list? form)
+           (-> form first value-or-set-of-values)))
+    ;; else
+    (fn [form]
+      (and (list? form)
+           (-> form first (= value-or-set-of-values))))))
+
 (defn clojure-source? [^File file]
   (boolean
-    (and (.isFile file)
-         (re-matches #".*\.clj[cx]?$" (.getName file)))))
+   (and (.isFile file)
+        (re-matches #".*\.clj[cx]?$" (.getName file)))))
 
 (defn indent [code n-spaces]
   (let [whitespaces (apply str (repeat n-spaces \space))]
@@ -39,39 +49,50 @@
                     (str whitespaces line)))
              (string/join "\n")))))
 
-(def test-template
+(def is-template
   "
-(deftest %s
-  (is (->
-%s
-    note-to-test/represent-value
-    (=
-%s))))
+  (is (= (note-to-test/represent-value
+%s)
+%s))
 ")
 
-(defn ->test [code index source-ns]
-  (let [output (try (binding [*ns* source-ns]
-                      (load-string code))
-                    (catch Exception e
-                      (throw (ex-info "note-to-test: Exception on load-string"
-                                      {:source-ns source-ns
-                                       :code code
-                                       :exception e}))))]
-    (if (var? output)
-      ;; if the output is a var,
-      ;; just keep the code (so that we run things in order)
-      code
-      ;; else - actually create a test
-      (format test-template
-              (str "test-" index)
-              (indent code 4)
-              (-> output
-                  represent-value
+(defn skip-form? [form]
+  (-> form
+      meta
+      :note-to-test/skip))
+
+(defn skip-represented-value? [represented-value]
+  (= represented-value
+     :note-to-test/skip))
+
+(defn is-clause [source-code]
+  (let [form (read-string source-code)
+        value (try (eval form)
+                   (catch Exception ex
+                     (throw (ex-info "note-to-test: Exception on load-string"
+                                     {:source-path source-code}
+                                     ex))))
+        represented-value (represent-value value)]
+    (when-not (or (skip-form? form)
+                  (skip-represented-value? represented-value))
+      (format is-template
+              (indent source-code 10)
+              (-> represented-value
                   pp/pprint
                   with-out-str
-                  (indent 5))))))
+                  (indent 7))))))
 
+(def test-template
+  "
+(deftest test-everything
+%s)
+")
 
+(defn test-clause [source-codes]
+  (->> source-codes
+       (map is-clause)
+       (string/join "\n")
+       (format test-template)))
 
 (defn ->test-ns-symbol [ns-symbol]
   (format "%s-generated-test"
@@ -109,46 +130,6 @@
   (->> source-path
        slurp
        code->forms))
-
-(defn begins-with? [value-or-set-of-values]
-  (if (set? value-or-set-of-values)
-    (fn [form]
-      (and (list? form)
-           (-> form first value-or-set-of-values)))
-    ;; else
-    (fn [form]
-      (and (list? form)
-           (-> form first (= value-or-set-of-values))))))
-
-
-
-(defn test-form->original-form [test-form]
-  (-> test-form
-      meta
-      :source
-      (string/split #"\n")
-      (->> (drop 2)
-           (string/join "\n"))
-      code->forms
-      first))
-
-
-(defn read-tests [test-path]
-  (when (-> test-path
-            io/file
-            (.exists))
-    (->> test-path
-         read-forms
-         (filter (begins-with? 'deftest))
-         (map (fn [test-form]
-                {:test-form test-form
-                 :original-form (test-form->original-form
-                                 test-form)})))))
-
-#_(defn git-hash []
-    (-> (shell/sh "git" "rev-parse" "HEAD")
-        :out
-        (string/replace #"\n" "")))
 
 (defn prepare-context [source-path]
   (try
@@ -195,12 +176,11 @@
         prev-file (io/file test-path)
         prev-content (when (.exists prev-file)
                        (slurp prev-file))
-        content (->> codes-for-tests
-                     (map-indexed (fn [i code]
-                                    (->test code i (find-ns ns-symbol))))
-                     (cons (->test-ns test-ns-symbol
-                                      test-ns-requires))
-                     (string/join "\n"))]
+        content (str (->test-ns test-ns-symbol
+                                test-ns-requires)
+                     "\n"
+                     (binding [*ns* (find-ns ns-symbol)]
+                       (test-clause codes-for-tests)))]
     (when verbose
       (cond
         (nil? prev-content) (println "note-to-test: CREATING" test-path)
