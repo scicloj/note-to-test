@@ -2,55 +2,71 @@
   (:require
    [clojure.test :refer [deftest is]]
    [scicloj.note-to-test.v1.api :as note-to-test]
-   [tablecloth.api :as tc]))
+   [tablecloth.api :as tc]
+   clojure.java.io))
 
-(deftest test-0
-  (is (->
-    (note-to-test/define-value-representation!
-      "tablecloth dataset"
-      {:predicate tc/dataset?
-       :representation (fn [ds]
-                         (-> ds
-                             (update-vals vec)
-                             (->> (into {}))))})
-    note-to-test/represent-value
-    (=
-     :ok))))
+(deftest test-everything
 
-
-(deftest test-1
-  (is (->
-    (+ 4
-       5
-       6)
-    note-to-test/represent-value
-    (=
-     15))))
-
-(defn f [x]
-  (+ x 19))
-
-(deftest test-3
-  (is (->
-    (f 12)
-    note-to-test/represent-value
-    (=
-     31))))
+  (is (= (note-to-test/represent-value
+          (note-to-test/define-value-representations!
+            [{:predicate var?
+              :representation (constantly :var)}
+             {:predicate tc/dataset?
+              :representation (fn [ds]
+                                (-> ds
+                                    (update-vals vec)
+                                    (->> (into {}))))}
+             {:predicate (partial = 5)
+              :representation (constantly :five)}]))
+       :ok))
 
 
-(deftest test-4
-  (is (->
-    (-> {:x [1 2 3]}
-        tc/dataset
-        (tc/map-columns :y [:x] (partial * 10)))
-    note-to-test/represent-value
-    (=
-     {:x [1 2 3], :y [10 20 30]}))))
+  (is (= (note-to-test/represent-value
+          (+ 2 3))
+       :five))
 
 
-(deftest test-5
-  (is (->
-    (f 13)
-    note-to-test/represent-value
-    (=
-     32))))
+  (is (= (note-to-test/represent-value
+          (+ 4
+             5
+             6))
+       15))
+
+
+  (is (= (note-to-test/represent-value
+          (+ 1 2))
+       3))
+
+
+  (is (= (note-to-test/represent-value
+          (defn f [x]
+            (+ x 19)))
+       :var))
+
+
+  (is (= (note-to-test/represent-value
+          (f 12))
+       31))
+
+
+  (is (= (note-to-test/represent-value
+          (require 'clojure.java.io))
+       nil))
+
+
+  (is (= (note-to-test/represent-value
+          (-> {:x [1 2 3]}
+              tc/dataset
+              (tc/map-columns :y [:x] (partial * 10))))
+       {:x [1 2 3], :y [10 20 30]}))
+
+
+  (is (= (note-to-test/represent-value
+          (f 13))
+       32))
+
+
+  (is (= (note-to-test/represent-value
+          {:x 9})
+       {:x 9}))
+)

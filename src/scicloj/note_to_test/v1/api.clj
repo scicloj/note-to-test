@@ -8,18 +8,40 @@
 (defn gentest!
   "Generate a clojure.test file for the code examples in the file at `source-path`.
 
-  Example:
+  Options:
+  - `accept` - boolean - default `false` - should we accept overriding an existing test file which has changed?
+  - `verbose` - boolean - default `false` - should we report whether an existing test file has changed?
+
+  Examples:
   ```clj
   (gentest! \"notebooks/dum/dummy.clj\")
   ```
-  "
+  ```clj
+  (gentest! \"notebooks/dum/dummy.clj\"
+            {:accept true
+             :verbose true})
+  ```
+   "
   [source-path options]
   (-> source-path
       impl/prepare-context
       (impl/write-tests! options)))
 
 (defn gentests!
-  "Generate tests for all source files discovered in [dirs]."
+  "Generate tests for all source files discovered in [dirs].
+
+  Options: like in `gentest!`.
+
+  Examples:
+  ```clj
+  (gentests! [\"notebooks\"])
+  ```
+  ```clj
+  (gentests! [\"notebooks\"]
+            {:accept true
+             :verbose true})
+  ```
+  "
   ([dirs] (gentests! dirs {}))
   ([dirs options]
    (let [{:keys [verbose]} options]
@@ -30,27 +52,28 @@
              :when (impl/clojure-source? file)]
        (when verbose (println "Loading file" (str file)))
        (cond-> (gentest! file options)
-               verbose (println))))
+         verbose (println))))
    [:success]))
 
-(defn define-value-representation!
-  "Define a data representation for special values. Outputs in test code will be represented this way.
+(defn define-value-representations!
+  "Define how values should be represented in the tests.
+  The definition is a vector of maps, where each map has a predicate and a representation function. Each value is checked through the maps in order and represented by the representation function corresponding to the first predicate that applies to it.
 
-  For example, let us add support for [tech.ml.dataset](https://github.com/techascent/tech.ml.dataset) datasets, that we will use through [Tablecloth](https://scicloj.github.io/tablecloth/).
+  Example:
   ```clj
-  (require '[tablecloth.api :as tc])
-  (note-to-test/define-value-representation!
-    \"tech.ml.dataset dataset\"
-    {:predicate tc/dataset?
-     :representation (fn [ds]
-                       `(tc/dataset ~(-> ds
-                                         (update-vals vec)
-                                         (->> (into {})))))})
+  (define-value-representations!
+    [{:predicate #(> % 20)
+      :representation (partial * 100)}
+     {:predicate #(> % 10)
+      :representation (partial * 10)}])
+
+  (represent-value 9) ; => 9, no predicate applies
+  (represent-value 19) ; => 190, second predicate applies
+  (represent-value 29) ; => 2900, first predicate applies
   ```
   "
-  [name spec]
-  (impl/define-value-representation! name spec))
-
+  [representations]
+  (impl/define-value-representations! representations))
 
 (defn represent-value
   "Represent a given value `v` using the extensible definitions of special value representations."
