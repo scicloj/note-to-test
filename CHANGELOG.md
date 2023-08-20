@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This change
 - moved all is clauses to one test
 - added skip options
 - taking care of requires in the body of the notebook
+- catching exceptions
 
 ## [1-alpha3]
 - shifting to shapshot-based workflow
