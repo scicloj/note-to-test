@@ -57,8 +57,7 @@
   "
   (is (= (note-to-test/represent-value
 %s)
-%s))
-")
+%s))")
 
 (defn skip-form? [form]
   (-> form
