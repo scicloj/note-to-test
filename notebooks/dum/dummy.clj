@@ -2,7 +2,6 @@
   (:require [scicloj.note-to-test.v1.api :as note-to-test]
             [tablecloth.api :as tc]))
 
-^:note-to-test/skip
 (note-to-test/define-value-representations!
   [{:predicate var?
     :representation (constantly :var)}
