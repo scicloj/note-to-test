@@ -7,19 +7,6 @@
 
 (deftest test-everything
 
-  (is (= (note-to-test/represent-value
-          (note-to-test/define-value-representations!
-            [{:predicate var?
-              :representation (constantly :var)}
-             {:predicate tc/dataset?
-              :representation (fn [ds]
-                                (-> ds
-                                    (update-vals vec)
-                                    (->> (into {}))))}
-             {:predicate (partial = 5)
-              :representation (constantly :five)}]))
-       :ok))
-
 
   (is (= (note-to-test/represent-value
           (+ 2 3))
@@ -32,10 +19,6 @@
              6))
        15))
 
-
-  (is (= (note-to-test/represent-value
-          (+ 1 2))
-       3))
 
 
   (is (= (note-to-test/represent-value
