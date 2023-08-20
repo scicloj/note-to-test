@@ -20,11 +20,15 @@
 (defn represent-value [v]
   (-> (->> @*value-representations
            (map (fn [{:keys [predicate representation]}]
+                  (Thread/sleep 100)
+                  (println {:v v
+                            :check (predicate v)})
                   (if (predicate v)
-                    (representation v))))
-           (filter identity)
+                    {:note-to-test/representeation (representation v)})))
+           (filter #(contains? % :note-to-test/representeation))
            first)
-      (or v)))
+      (or {:note-to-test/representeation v})
+      :note-to-test/representeation))
 
 (defn begins-with? [value-or-set-of-values]
   (if (set? value-or-set-of-values)

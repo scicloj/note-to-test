@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. This change
 - added skip options
 - taking care of requires in the body of the notebook
 - catching exceptions
+- allowing nil as a valid value representation
 
 ## [1-alpha3]
 - shifting to shapshot-based workflow
