@@ -18,7 +18,7 @@
                                     (->> (into {}))))}
              {:predicate (partial = 5)
               :representation (constantly :five)}]))
-       :ok))
+       [:ok]))
 
   (is (= (note-to-test/represent-value
           (+ 2 3))

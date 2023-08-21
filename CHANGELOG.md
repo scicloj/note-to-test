@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [1-alpha5] - 2023-08-21
+- minor changes: cleaning up unnecessary printing, sleeping, etc.
+
 ## [1-alpha4] - 2023-08-20
 - basic change detection (#4)
 - special value representations are defined in an ordered fashion
