@@ -79,3 +79,8 @@
   "Represent a given value `v` using the extensible definitions of special value representations."
   [v]
   (impl/represent-value v))
+
+(defn represent-value-with-meta
+  "Represent a given value `v`, apply `represent-value` to both `v` and its metadata, and retorn both in one data structure."
+  [v]
+  (impl/represent-value-with-meta v))

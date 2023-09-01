@@ -27,6 +27,16 @@
       (or {:note-to-test/representeation v})
       :note-to-test/representeation))
 
+(defn represent-value-with-meta [v]
+  (cond
+    ;; handle a var
+    (var? v)
+    [:var]
+    ;; else
+    :else
+    {:value (-> v represent-value)
+     :meta (-> v meta represent-value)}))
+
 (defn begins-with? [value-or-set-of-values]
   (if (set? value-or-set-of-values)
     (fn [form]
@@ -52,7 +62,7 @@
 
 (def is-template
   "
-  (is (= (note-to-test/represent-value
+  (is (= (note-to-test/represent-value-with-meta
 %s)
 %s))")
 
@@ -72,16 +82,18 @@
                      (throw (ex-info "note-to-test: Exception on load-string"
                                      {:source-code source-code}
                                      ex))))
-        represented-value (try (represent-value value)
-                               (catch Exception ex
-                                 (throw (ex-info "note-to-test: Exception on represent-value"
-                                                 {:source-code source-code}
-                                                 ex))))]
+        representation (try (represent-value-with-meta value)
+                            (catch Exception ex
+                              (throw (ex-info "note-to-test: Exception on represent-value"
+                                              {:source-code source-code}
+                                              ex))))]
     (when-not (or (skip-form? form)
-                  (skip-represented-value? represented-value))
+                  (-> representation
+                      :value
+                      skip-represented-value?))
       (format is-template
               (indent source-code 10)
-              (-> represented-value
+              (-> representation
                   pp/pprint
                   with-out-str
                   (indent 7))))))

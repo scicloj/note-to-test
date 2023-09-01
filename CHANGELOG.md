@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).
 
+## [1-alpha6] - 2023-09-01
+- testing value metadata
+
 ## [1-alpha5] - 2023-08-21
 - minor changes: cleaning up unnecessary printing, sleeping, etc.
 
