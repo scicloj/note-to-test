@@ -21,6 +21,7 @@ Tests are created by running code examples and remembering their outputs. The pe
 Tests are written in standard `clojure.test` files. Each namespace of code examples has its own generated test file. 
 * The test namespace has one `(deftest ...)` clause with many `is` clauses.
 * The `is` clauses corresond to all runnable top-level forms in the source namespace. That is, all top-level forms except for the `(ns ...)` definition and Rich `(comment ...)` blocks. 
+* The `is` clauses will compare the resulting values (and their metadata) with the ones that appeared at the time generating thetests. Possibly, the values will be compared through some specialized data representation (see below).
 * The namespace definition form is adapted to the test namespace's needs, including not only the source namespace `require`s, but also those which appear in the body of the source namespace.
 
 ## Usage
