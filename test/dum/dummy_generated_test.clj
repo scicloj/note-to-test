@@ -44,7 +44,7 @@
   (is (= (note-to-test/represent-value-with-meta
           (defn f [x]
             (+ x 19)))
-       [:var]))
+       :var-or-nil))
 
   (is (= (note-to-test/represent-value-with-meta
           (f 12))

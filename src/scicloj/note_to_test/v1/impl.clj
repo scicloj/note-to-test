@@ -29,9 +29,10 @@
 
 (defn represent-value-with-meta [v]
   (cond
-    ;; handle a var
-    (var? v)
-    [:var]
+    ;; handle a var or a nil
+    (or (var? v)
+        (nil? v))
+    :var-or-nil
     ;; else
     :else
     {:value (-> v represent-value)
