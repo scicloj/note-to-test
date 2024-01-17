@@ -1,6 +1,6 @@
 # note-to-test
 
-Generating tests from Clojure notes
+Generating tests from Clojure code examples
 
 [![Clojars Project](https://img.shields.io/clojars/v/org.scicloj/note-to-test.svg)](https://clojars.org/org.scicloj/note-to-test)
 
